@@ -36,9 +36,11 @@ class PdfExtraction extends StatefulWidget {
 }
 
 class _PdfExtractionState extends State<PdfExtraction> {
+   TextEditingController _controller = new TextEditingController();
   static final String _startingText =
-      "A simple Text Widget, that can translate any text to any language using instant on device translation AI model, all you have to do is to provide the text and the widget will translate automatically, as a result you don't have to specify and localization files and type translation manually the widget will do it for you.";
+      "This app can translate from any language to any language. Simply enter the text you want to translate and press the button.\n We can use this method instead of localization";
   String _text = _startingText;
+  // First language when app starts
   Map<String, String>? originLanguage = {'ENGLISH': "en"};
   Map<String, String>? translateTo;
   bool _translate = true;
@@ -50,7 +52,7 @@ class _PdfExtractionState extends State<PdfExtraction> {
     return Scaffold(
         appBar: AppBar(
           title:  TranslatedText(
-            'Bye Bye Localization',
+            'Translator App',
             style: TextStyle(fontSize: 24),
           ),
         ),
@@ -69,7 +71,7 @@ class _PdfExtractionState extends State<PdfExtraction> {
               return buildBody();
             }
 
-            // Otherwise, show something whilst waiting for initialization to complete
+            // UI show when data is still loading
             return Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -83,20 +85,9 @@ class _PdfExtractionState extends State<PdfExtraction> {
                         style: TextStyle(fontSize: 30, color: Colors.black),
                         children: const <TextSpan>[
                           TextSpan(
-                              text: 'this might take a while... \n',
+                              text: 'Please wait for some time\n',
                               style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20)),
-                          TextSpan(
-                              text:
-                                  'because we are downloading an AI model to translate through it,'
-                                  ' once finished you will see an incredible thing, I PROMISE... \n ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                          TextSpan(
-                              text:
-                                  '  so say Astaghfer Allah in this time time!',
-                              style: TextStyle(
-                                  fontFamily: 'casual', fontSize: 30)),
+                                  fontSize: 20)),
                         ],
                       ),
                     ),
@@ -111,8 +102,6 @@ class _PdfExtractionState extends State<PdfExtraction> {
         )
     );
   }
-
-  TextEditingController _controller = new TextEditingController();
 
   Container buildBody() {
     return Container(
@@ -245,15 +234,18 @@ class _PdfExtractionState extends State<PdfExtraction> {
       translateToLanguage: Languages.ARABIC,
     );
   }
-
+// Model sheet to show all languages
   Future<Map<String, String>?> buildModelSheet() async {
     return await showModalBottomSheet<Map<String, String>>(
       enableDrag: true,
       context: context,
       builder: (BuildContext context) {
         return Container(
+          decoration:const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topLeft:Radius.circular(11),topRight: Radius.circular(11)),
+          ),
           height: 400,
-          color: Colors.amberAccent,
           child: Center(
             child: ListView.builder(
               itemCount: LanguageHelper.languages.length,
@@ -261,6 +253,7 @@ class _PdfExtractionState extends State<PdfExtraction> {
                 return Column(
                   children: [
                     ListTile(
+                      // This will set the language to the selected language
                       onTap: () {
                         Navigator.pop(context, LanguageHelper.languages[index]);
                       },
