@@ -15,6 +15,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  bye_bye_localization:
+    dependency: "direct main"
+    description:
+      name: bye_bye_localization
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0+8"
   characters:
     dependency: transitive
     description:
@@ -74,6 +81,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  google_ml_kit:
+    dependency: transitive
+    description:
+      name: google_ml_kit
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.6.0"
   lints:
     dependency: transitive
     description:
@@ -165,3 +179,4 @@ packages:
     version: "2.1.1"
 sdks:
   dart: ">=2.15.1 <3.0.0"
+  flutter: ">=1.20.0"
