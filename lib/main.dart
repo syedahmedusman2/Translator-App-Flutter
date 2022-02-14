@@ -1,5 +1,6 @@
+import 'package:bye_bye_localization/bye_bye_localization.dart';
 import 'package:flutter/material.dart';
-
+import 'dart:ui' as ui;
 void main() {
   runApp(const MyApp());
 }
@@ -24,92 +25,258 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: PdfExtraction()
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class PdfExtraction extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _PdfExtractionState createState() => _PdfExtractionState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _PdfExtractionState extends State<PdfExtraction> {
+  static final String _startingText =
+      "A simple Text Widget, that can translate any text to any language using instant on device translation AI model, all you have to do is to provide the text and the widget will translate automatically, as a result you don't have to specify and localization files and type translation manually the widget will do it for you.";
+  String _text = _startingText;
+  Map<String, String>? originLanguage = {'ENGLISH': "en"};
+  Map<String, String>? translateTo;
+  bool _translate = true;
+  bool textDirection = false;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+        appBar: AppBar(
+          title:  TranslatedText(
+            'Bye Bye Localization',
+            style: TextStyle(fontSize: 24),
+          ),
         ),
+        body:
+        FutureBuilder(
+          // Initialize FlutterFire:
+          future: initTranslation(),
+          builder: (context, snapshot) {
+            // Check for errors
+            if (snapshot.hasError) {
+              return Text('${snapshot.error}');
+            }
+
+            // Once complete, show your application
+            if (snapshot.connectionState == ConnectionState.done) {
+              return buildBody();
+            }
+
+            // Otherwise, show something whilst waiting for initialization to complete
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Center(
+                    child: RichText(
+                      text: TextSpan(
+                        text:
+                            'Translating  from ${originLanguage!.keys.first} to ${translateTo == null ? Localizations.localeOf(context).languageCode : translateTo!.keys.first} \n',
+                        style: TextStyle(fontSize: 30, color: Colors.black),
+                        children: const <TextSpan>[
+                          TextSpan(
+                              text: 'this might take a while... \n',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20)),
+                          TextSpan(
+                              text:
+                                  'because we are downloading an AI model to translate through it,'
+                                  ' once finished you will see an incredible thing, I PROMISE... \n ',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                          TextSpan(
+                              text:
+                                  '  so say Astaghfer Allah in this time time!',
+                              style: TextStyle(
+                                  fontFamily: 'casual', fontSize: 30)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  CircularProgressIndicator(
+                    strokeWidth: 5,
+                  ),
+                ],
+              ),
+            );
+          },
+        )
+    );
+  }
+
+  TextEditingController _controller = new TextEditingController();
+
+  Container buildBody() {
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: ListView(
+        primary: true,
+        shrinkWrap: true,
+        children: <Widget>[
+          ListTile(
+            onTap: () {
+              buildModelSheet().then((value) {
+                setState(() {
+                  translateTo = value;
+                });
+              });
+            },
+            leading: Icon(Icons.translate),
+            trailing: Icon(Icons.arrow_forward_ios_rounded),
+            title: Text(
+              "tap to Change Local",
+              style: TextStyle(color: Colors.black),
+            ),
+            subtitle: translateTo != null
+                ? Text('${translateTo!.keys.first}')
+                : Text('current local is -->'
+                    '${LanguageHelper.languages.firstWhere(
+                          (k) =>
+                              k.values.first == ui.window.locale.languageCode,
+                        ).keys.first}'),
+          ),
+          Divider(),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: TextFormField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                icon: Icon(Icons.edit_rounded),
+                hintText: 'Write any text then press translate',
+              ),
+            ),
+          ),
+          TextButton(
+            child: TranslatedText(
+              "Translate the text",
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(
+                padding: EdgeInsets.all(5), backgroundColor: Colors.blueAccent),
+            onPressed: () {
+              setState(() {
+                _translate = true;
+                _text = _controller.text.isNotEmpty
+                    ? _controller.text
+                    : _startingText;
+              });
+            },
+          ),
+          TextButton(
+            child: TranslatedText(
+              "Change Text direction",
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(
+                padding: EdgeInsets.all(5), backgroundColor: Colors.blueAccent),
+            onPressed: () {
+              setState(() {
+                textDirection = !textDirection;
+              });
+            },
+          ),
+          TextButton(
+            child: Text(
+              _translate ? "Show Original language" : "Show translation",
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(
+                padding: EdgeInsets.all(5), backgroundColor: Colors.blueAccent),
+            onPressed: () {
+              setState(() {
+                _translate = !_translate;
+              });
+            },
+          ),
+          TextButton(
+            child: TranslatedText(
+              'Reset text',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(
+                padding: EdgeInsets.all(5), backgroundColor: Colors.blueAccent),
+            onPressed: () {
+              setState(() {
+                _text = _startingText;
+              });
+            },
+          ),
+          _translate
+              ? TranslatedText(_text,
+                  textDirection:
+                      textDirection ? TextDirection.ltr : TextDirection.rtl,
+                  style: TextStyle(
+                    fontSize: 18,
+                  ))
+              : Text(
+                  _text,
+                  textDirection:
+                      textDirection ? TextDirection.ltr : TextDirection.rtl,
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Future<bool> initTranslation() async {
+    Locale myLocale = Localizations.localeOf(context);
+    print('myLocale.languageCode ${ui.window.locale.languageCode}');
+    return await TranslationManager().init(
+        translateToLanguage: translateTo == null
+            ? ui.window.locale.languageCode
+            : translateTo!.values.first,
+        originLanguage: originLanguage!.values.first);
+  }
+
+  Future<bool> initWidget() async {
+    return await TranslationManager().init(
+      originLanguage: Languages.ENGLISH,
+      translateToLanguage: Languages.ARABIC,
+    );
+  }
+
+  Future<Map<String, String>?> buildModelSheet() async {
+    return await showModalBottomSheet<Map<String, String>>(
+      enableDrag: true,
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 400,
+          color: Colors.amberAccent,
+          child: Center(
+            child: ListView.builder(
+              itemCount: LanguageHelper.languages.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Column(
+                  children: [
+                    ListTile(
+                      onTap: () {
+                        Navigator.pop(context, LanguageHelper.languages[index]);
+                      },
+                      title: Text(
+                        '${LanguageHelper.languages[index].keys.first}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    Divider(),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
